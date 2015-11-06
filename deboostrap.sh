@@ -39,17 +39,15 @@ custom_debootstrap () {
 		display_alert "Creating FAT boot partition" "$BOOTSIZE Mb" "info"
 	fi
 	# Create image file
-	while read line; do
-		[[ "$line" =~ "records out" ]] &&
-		echo "$(( ${line%+*}*100/$SDSIZE +1 ))" | dialog --backtitle "$backtitle" --title "Creating blank image ($SDSIZE Mb), please wait ..." --gauge "" 5 70
-	done <<(
-		dd if=/dev/zero of=$DEST/cache/tmprootfs.raw bs=1M count=$SDSIZE 2>&1 &
-		pid=$!
-		sleep 1
-		while kill -USR1 $pid 2>/dev/null; do
-			sleep 1
-		done 
-	)
+	while read line;do
+	  [[ "$line" =~ "records out" ]] &&
+	  echo "$(( ${line%+*}*100/$SDSIZE +1 ))" | dialog --backtitle "$backtitle" --title "Creating blank image ($SDSIZE Mb), please wait ..." --gauge "" 5 70
+	done< <( dd if=/dev/zero of=$DEST/cache/tmprootfs.raw bs=1M count=$SDSIZE 2>&1 &
+	         pid=$!
+	         sleep 1
+	         while kill -USR1 $pid 2>/dev/null;do
+	           sleep 1
+	         done )
 	
 	# Find first available free device
 	LOOP=$(losetup -f)
